@@ -15,14 +15,245 @@
  */
 
 import React from 'react';
-import { createDevApp } from '@backstage/dev-utils';
-import { Box, Button, Typography } from '@material-ui/core';
+import { Entity } from '@backstage/catalog-model';
+import { EntityGridItem, createDevApp } from '@backstage/dev-utils';
+import { Box, Button, Typography, Grid } from '@material-ui/core';
 
-import { gitReleaseManagerPlugin, GitReleaseManagerPage } from '../src/plugin';
+import {
+  gitReleaseManagerPlugin,
+  GitReleaseManagerPage,
+  EntityGitReleaseManager,
+  gitReleaseManagerApiRef,
+} from '../src/plugin';
 import { InfoCardPlus } from '../src/components/InfoCardPlus';
+import { Content, Header, Page } from '@backstage/core-components';
+import { GITHUB_PROJECT_SLUG_ANNOTATION } from '../src';
+import { GitReleaseApi } from '../src/api/GitReleaseClient';
+
+const mockGitReleaseManagerApi: GitReleaseApi = {
+  getUser: _args =>
+    Promise.resolve({
+      user: {
+        username: 'backstage-user',
+        email: 'guest@backstage.io',
+      },
+    }),
+  getHost: function (): string {
+    throw new Error('Function getHost not implemented.');
+  },
+  getRepoPath: function (args: { owner: string; repo: string }): string {
+    throw new Error('Function getRepoPath not implemented.');
+  },
+  getOwners: () => Promise.resolve({ owners: ['backstage-user'] }),
+  getRepositories: function (args: {
+    owner: string;
+  }): Promise<{ repositories: string[] }> {
+    throw new Error('Function getRepositories not implemented.');
+  },
+  getRecentCommits: function (
+    args: { releaseBranchName?: string | undefined } & {
+      owner: string;
+      repo: string;
+    },
+  ): Promise<{
+    recentCommits: {
+      htmlUrl: string;
+      sha: string;
+      author: { htmlUrl?: string | undefined; login?: string | undefined };
+      commit: { message: string };
+      firstParentSha?: string | undefined;
+    }[];
+  }> {
+    throw new Error('Function getRecentCommits not implemented.');
+  },
+  getLatestRelease: function (args: { owner: string; repo: string }): Promise<{
+    latestRelease: {
+      targetCommitish: string;
+      tagName: string;
+      prerelease: boolean;
+      id: number;
+      htmlUrl: string;
+      body?: string | null | undefined;
+    } | null;
+  }> {
+    throw new Error('Function getLatestRelease not implemented.');
+  },
+  getRepository: function (args: { owner: string; repo: string }): Promise<{
+    repository: {
+      pushPermissions: boolean | undefined;
+      defaultBranch: string;
+      name: string;
+    };
+  }> {
+    throw new Error('Function getRepository not implemented.');
+  },
+  getCommit: function (
+    args: { ref: string } & { owner: string; repo: string },
+  ): Promise<{
+    commit: {
+      sha: string;
+      htmlUrl: string;
+      commit: { message: string };
+      createdAt?: string | undefined;
+    };
+  }> {
+    throw new Error('Function getCommit not implemented.');
+  },
+  getBranch: function (
+    args: { branch: string } & { owner: string; repo: string },
+  ): Promise<{
+    branch: {
+      name: string;
+      links: { html: string };
+      commit: { sha: string; commit: { tree: { sha: string } } };
+    };
+  }> {
+    throw new Error('Function getBranch not implemented.');
+  },
+  createRef: function (
+    args: { ref: string; sha: string } & { owner: string; repo: string },
+  ): Promise<{ reference: { ref: string; objectSha: string } }> {
+    throw new Error('Function createRef not implemented.');
+  },
+  deleteRef: function (
+    args: { ref: string } & { owner: string; repo: string },
+  ): Promise<{ success: boolean }> {
+    throw new Error('Function deleteRef not implemented.');
+  },
+  getComparison: function (
+    args: { base: string; head: string } & { owner: string; repo: string },
+  ): Promise<{ comparison: { htmlUrl: string; aheadBy: number } }> {
+    throw new Error('Function getComparison not implemented.');
+  },
+  createRelease: function (
+    args: {
+      tagName: string;
+      name: string;
+      targetCommitish: string;
+      body: string;
+    } & { owner: string; repo: string },
+  ): Promise<{
+    release: { name: string | null; htmlUrl: string; tagName: string };
+  }> {
+    throw new Error('Function createRelease not implemented.');
+  },
+  createTagObject: function (
+    args: {
+      tag: string;
+      taggerEmail?: string | undefined;
+      message: string;
+      object: string;
+      taggerName: string;
+    } & { owner: string; repo: string },
+  ): Promise<{ tagObject: { tagName: string; tagSha: string } }> {
+    throw new Error('Function createTagObject not implemented.');
+  },
+  createCommit: function (
+    args: { message: string; tree: string; parents: string[] } & {
+      owner: string;
+      repo: string;
+    },
+  ): Promise<{ commit: { message: string; sha: string } }> {
+    throw new Error('Function createCommit not implemented.');
+  },
+  updateRef: function (
+    args: { sha: string; ref: string; force: boolean } & {
+      owner: string;
+      repo: string;
+    },
+  ): Promise<{ reference: { ref: string; object: { sha: string } } }> {
+    throw new Error('Function updateRef not implemented.');
+  },
+  merge: function (
+    args: { base: string; head: string } & { owner: string; repo: string },
+  ): Promise<{
+    merge: {
+      htmlUrl: string;
+      commit: { message: string; tree: { sha: string } };
+    };
+  }> {
+    throw new Error('Function merge not implemented.');
+  },
+  updateRelease: function (
+    args: {
+      releaseId: number;
+      tagName: string;
+      body?: string | undefined;
+      prerelease?: boolean | undefined;
+    } & { owner: string; repo: string },
+  ): Promise<{
+    release: { name: string | null; tagName: string; htmlUrl: string };
+  }> {
+    throw new Error('Function updateRelease not implemented.');
+  },
+  getAllTags: function (args: { owner: string; repo: string }): Promise<{
+    tags: { tagName: string; tagSha: string; tagType: 'tag' | 'commit' }[];
+  }> {
+    throw new Error('Function getAllTags not implemented.');
+  },
+  getAllReleases: function (args: { owner: string; repo: string }): Promise<{
+    releases: {
+      id: number;
+      name: string | null;
+      tagName: string;
+      createdAt: string | null;
+      htmlUrl: string;
+    }[];
+  }> {
+    throw new Error('Function getAllReleases not implemented.');
+  },
+  getTag: function (
+    args: { tagSha: string } & { owner: string; repo: string },
+  ): Promise<{
+    tag: {
+      date: string;
+      username: string;
+      userEmail: string;
+      objectSha: string;
+    };
+  }> {
+    throw new Error('Function getTag not implemented.');
+  },
+};
+
+const entity = (name?: string) =>
+  ({
+    apiVersion: 'backstage.io/v1alpha1',
+    kind: 'Component',
+    metadata: {
+      annotations: {
+        [GITHUB_PROJECT_SLUG_ANNOTATION]: name,
+      },
+      name: name,
+    },
+  } as Entity);
 
 createDevApp()
+  .registerApi({
+    api: gitReleaseManagerApiRef,
+    deps: {},
+    factory: () => mockGitReleaseManagerApi,
+  })
   .registerPlugin(gitReleaseManagerPlugin)
+  .addPage({
+    title: 'Entity',
+    element: (
+      <Page themeId="home">
+        <Header title="Entity Page" />
+        <Content>
+          <Grid container>
+            <EntityGridItem
+              xs={12}
+              md={12}
+              entity={entity('backstage/backstage')}
+            >
+              <EntityGitReleaseManager />
+            </EntityGridItem>
+          </Grid>
+        </Content>
+      </Page>
+    ),
+  })
   .addPage({
     title: 'Dynamic',
     path: '/dynamic',

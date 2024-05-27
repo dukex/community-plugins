@@ -23,6 +23,7 @@
 export {
   gitReleaseManagerPlugin,
   GitReleaseManagerPage,
+  
   gitReleaseManagerApiRef,
 } from './plugin';
 
@@ -40,3 +41,5 @@ export type {
 } from './types/types';
 
 export type { Project } from './contexts/ProjectContext';
+
+export const GITHUB_PROJECT_SLUG_ANNOTATION = 'github.com/project-slug';

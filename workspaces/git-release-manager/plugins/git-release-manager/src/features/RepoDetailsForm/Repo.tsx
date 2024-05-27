@@ -35,9 +35,35 @@ import { useQueryHandler } from '../../hooks/useQueryHandler';
 import { Progress } from '@backstage/core-components';
 import { useApi } from '@backstage/core-plugin-api';
 
-export function Repo() {
+function StaticRepo({ project }: { project: Project }) {
+  const formClasses = useFormClasses();
+
+  return (
+    <FormControl
+      className={formClasses.formControl}
+      required
+      disabled={project.isProvidedViaProps}
+    >
+      <InputLabel id="repo-select-label">Repositories</InputLabel>
+      <Select
+        data-testid={TEST_IDS.form.repo.select}
+        labelId="repo-select-label"
+        id="repo-select"
+        value={project.repo}
+        defaultValue=""
+        className={formClasses.selectEmpty}
+      >
+        <MenuItem value={project.repo}>
+          <strong>{project.repo}</strong>
+        </MenuItem>
+      </Select>
+    </FormControl>
+  );
+}
+
+function FormRepo({ project }: { project: Project }) {
   const pluginApiClient = useApi(gitReleaseManagerApiRef);
-  const { project } = useProjectContext();
+
   const navigate = useNavigate();
   const formClasses = useFormClasses();
   const { getQueryParamsWithUpdates } = useQueryHandler();
@@ -121,4 +147,14 @@ export function Repo() {
       )}
     </FormControl>
   );
+}
+
+export function Repo() {
+  const { project } = useProjectContext();
+
+  if (project.isProvidedViaProps) {
+    return <StaticRepo project={project} />;
+  }
+
+  return <FormRepo project={project} />;
 }

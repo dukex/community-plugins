@@ -29,18 +29,46 @@ import {
 import { gitReleaseManagerApiRef } from '../../api/serviceApiRef';
 import { TEST_IDS } from '../../test-helpers/test-ids';
 import { useFormClasses } from './styles';
-import { useProjectContext } from '../../contexts/ProjectContext';
+import { Project, useProjectContext } from '../../contexts/ProjectContext';
 import { useQueryHandler } from '../../hooks/useQueryHandler';
 import { useUserContext } from '../../contexts/UserContext';
 
 import { Progress } from '@backstage/core-components';
 import { useApi } from '@backstage/core-plugin-api';
 
-export function Owner() {
-  const pluginApiClient = useApi(gitReleaseManagerApiRef);
-  const { project } = useProjectContext();
-  const { user } = useUserContext();
+function StaticOwner({ project }: { project: Project }) {
   const formClasses = useFormClasses();
+
+  return (
+    <FormControl
+      className={formClasses.formControl}
+      required
+      disabled={project.isProvidedViaProps}
+    >
+      <>
+        <InputLabel id="owner-select-label">Owners</InputLabel>
+        <Select
+          data-testid={TEST_IDS.form.owner.select}
+          labelId="owner-select-label"
+          id="owner-select"
+          value={project.owner}
+          defaultValue=""
+          className={formClasses.selectEmpty}
+        >
+          <MenuItem value={project.owner}>
+            <strong>{project.owner}</strong>
+          </MenuItem>
+        </Select>
+      </>
+    </FormControl>
+  );
+}
+
+function FormOwner({ project }: { project: Project }) {
+  const formClasses = useFormClasses();
+  const pluginApiClient = useApi(gitReleaseManagerApiRef);
+  const { user } = useUserContext();
+
   const navigate = useNavigate();
   const { getQueryParamsWithUpdates } = useQueryHandler();
 
@@ -92,7 +120,7 @@ export function Owner() {
 
             {!error && customOwnerFromUrl && (
               <MenuItem value={project.owner}>
-                <strong>From URL: {project.owner}</strong>
+                <strong>{project.owner}</strong>
               </MenuItem>
             )}
 
@@ -124,4 +152,14 @@ export function Owner() {
       )}
     </FormControl>
   );
+}
+
+export function Owner() {
+  const { project } = useProjectContext();
+
+  if (project.isProvidedViaProps) {
+    return <StaticOwner project={project} />;
+  }
+
+  return <FormOwner project={project} />;
 }

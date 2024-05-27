@@ -20,6 +20,7 @@ import {
   createApiFactory,
   githubAuthApiRef,
   createRoutableExtension,
+  createComponentExtension,
 } from '@backstage/core-plugin-api';
 
 import { GitReleaseClient } from './api/GitReleaseClient';
@@ -60,5 +61,17 @@ export const GitReleaseManagerPage = gitReleaseManagerPlugin.provide(
     component: () =>
       import('./GitReleaseManager').then(m => m.GitReleaseManager),
     mountPoint: rootRouteRef,
+  }),
+);
+
+export const EntityGitReleaseManager = gitReleaseManagerPlugin.provide(
+  createComponentExtension({
+    name: 'EntityGitReleaseManager',
+    component: {
+      lazy: () =>
+        import('./EntityGitReleaseManager').then(
+          m => m.EntityGitReleaseManager,
+        ),
+    },
   }),
 );
