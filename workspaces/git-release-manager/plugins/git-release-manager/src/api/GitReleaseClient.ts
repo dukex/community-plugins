@@ -553,10 +553,45 @@ export class GitReleaseClient implements GitReleaseApi {
   };
 }
 
-type OwnerRepo = {
+export type OwnerRepo = {
   owner: Project['owner'];
   repo: Project['repo'];
 };
+
+export interface Release {
+  targetCommitish: string;
+  tagName: string;
+  prerelease: boolean;
+  id: number;
+  htmlUrl: string;
+  body?: string | null;
+}
+
+export interface Repository {
+  pushPermissions: boolean | undefined;
+  defaultBranch: string;
+  name: string;
+}
+
+export interface User {
+  username: string;
+  email?: string;
+}
+
+export interface Branch {
+  name: string;
+  links: {
+    html: string;
+  };
+  commit: {
+    sha: string;
+    commit: {
+      tree: {
+        sha: string;
+      };
+    };
+  };
+}
 
 export interface GitReleaseApi {
   getHost: () => string;
@@ -572,10 +607,7 @@ export interface GitReleaseApi {
   }>;
 
   getUser: (args: OwnerRepo) => Promise<{
-    user: {
-      username: string;
-      email?: string;
-    };
+    user: User;
   }>;
 
   getRecentCommits: (
@@ -598,22 +630,11 @@ export interface GitReleaseApi {
   }>;
 
   getLatestRelease: (args: OwnerRepo) => Promise<{
-    latestRelease: {
-      targetCommitish: string;
-      tagName: string;
-      prerelease: boolean;
-      id: number;
-      htmlUrl: string;
-      body?: string | null;
-    } | null;
+    latestRelease: Release | null;
   }>;
 
   getRepository: (args: OwnerRepo) => Promise<{
-    repository: {
-      pushPermissions: boolean | undefined;
-      defaultBranch: string;
-      name: string;
-    };
+    repository: Repository;
   }>;
 
   getCommit: (
@@ -636,20 +657,7 @@ export interface GitReleaseApi {
       branch: string;
     } & OwnerRepo,
   ) => Promise<{
-    branch: {
-      name: string;
-      links: {
-        html: string;
-      };
-      commit: {
-        sha: string;
-        commit: {
-          tree: {
-            sha: string;
-          };
-        };
-      };
-    };
+    branch: Branch;
   }>;
 
   createRef: (
