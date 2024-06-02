@@ -15,16 +15,32 @@
  */
 
 import React from 'react';
-import { createDevApp } from '@backstage/dev-utils';
-import { Box, Button, Typography } from '@material-ui/core';
+import { createDevApp, EntityGridItem } from '@backstage/dev-utils';
+import { Box, Button, Grid, Typography } from '@material-ui/core';
+import { Entity } from '@backstage/catalog-model';
 
 import {
+  EntityGitReleaseManager,
   gitReleaseManagerPlugin,
   GitReleaseManagerPage,
   gitReleaseManagerApiRef,
 } from '../src/plugin';
 import { InfoCardPlus } from '../src/components/InfoCardPlus';
 import { mockGitReleaseManagerApi } from './mock/github/client';
+import { Page, Header, Content } from '@backstage/core-components';
+import { GITHUB_PROJECT_SLUG_ANNOTATION } from '../src';
+
+const entity = (name?: string) =>
+  ({
+    apiVersion: 'backstage.io/v1alpha1',
+    kind: 'Component',
+    metadata: {
+      annotations: {
+        [GITHUB_PROJECT_SLUG_ANNOTATION]: name,
+      },
+      name: name,
+    },
+  } as Entity);
 
 createDevApp()
   .registerApi({
@@ -160,6 +176,25 @@ createDevApp()
           }}
         />
       </Box>
+    ),
+  })
+  .addPage({
+    title: 'Entity',
+    element: (
+      <Page themeId="home">
+        <Header title="Entity Page" />
+        <Content>
+          <Grid container>
+            <EntityGridItem
+              xs={12}
+              md={12}
+              entity={entity('goodreleaser/repo-semantic-versioned')}
+            >
+              <EntityGitReleaseManager />
+            </EntityGridItem>
+          </Grid>
+        </Content>
+      </Page>
     ),
   })
   .render();

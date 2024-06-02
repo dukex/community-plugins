@@ -20,6 +20,7 @@ describe('git-release-manager', () => {
   it('should export plugin & friends', () => {
     expect(Object.keys(plugin).sort()).toMatchInlineSnapshot(`
       [
+        "EntityGitReleaseManager",
         "GitReleaseManagerPage",
         "components",
         "constants",

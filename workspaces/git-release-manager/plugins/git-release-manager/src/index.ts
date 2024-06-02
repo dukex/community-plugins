@@ -40,3 +40,7 @@ export type {
 } from './types/types';
 
 export type { Project } from './contexts/ProjectContext';
+
+export const GITHUB_PROJECT_SLUG_ANNOTATION = 'github.com/project-slug';
+export const GITHUB_PROJECT_VERSIONING_STRATEGY_ANNOTATION =
+  'github.com/versioning-strategy';

@@ -41,28 +41,30 @@ import {
   GetRepositoryResult,
 } from './api/GitReleaseClient';
 
+export interface GitReleaseManagerFeaturesProps {
+  info?: Pick<ComponentConfig<void>, 'omit'>;
+  stats?: Pick<ComponentConfig<void>, 'omit'>;
+  createRc?: ComponentConfig<CreateRcOnSuccessArgs>;
+  promoteRc?: ComponentConfig<PromoteRcOnSuccessArgs>;
+  patch?: ComponentConfig<PatchOnSuccessArgs>;
+  custom?: {
+    factory: ({
+      latestRelease,
+      project,
+      releaseBranch,
+      repository,
+    }: {
+      latestRelease: GetLatestReleaseResult['latestRelease'] | null;
+      project: Project;
+      releaseBranch: GetBranchResult['branch'] | null;
+      repository: GetRepositoryResult['repository'];
+    }) => React.ReactElement | React.ReactElement[];
+  };
+}
+
 interface GitReleaseManagerProps {
   project?: Omit<Project, 'isProvidedViaProps'>;
-  features?: {
-    info?: Pick<ComponentConfig<void>, 'omit'>;
-    stats?: Pick<ComponentConfig<void>, 'omit'>;
-    createRc?: ComponentConfig<CreateRcOnSuccessArgs>;
-    promoteRc?: ComponentConfig<PromoteRcOnSuccessArgs>;
-    patch?: ComponentConfig<PatchOnSuccessArgs>;
-    custom?: {
-      factory: ({
-        latestRelease,
-        project,
-        releaseBranch,
-        repository,
-      }: {
-        latestRelease: GetLatestReleaseResult['latestRelease'] | null;
-        project: Project;
-        releaseBranch: GetBranchResult['branch'] | null;
-        repository: GetRepositoryResult['repository'];
-      }) => React.ReactElement | React.ReactElement[];
-    };
-  };
+  features?: GitReleaseManagerFeaturesProps;
 }
 
 export function GitReleaseManager(props: GitReleaseManagerProps) {
